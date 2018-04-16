@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Pocket Code Reset</string>
-    <string name="remove_all_projects">Remove all projects</string>
-    <string name="projects_removed">Removed all projects</string>
-    <string name="projects_remove_failed">Removing projects failed</string>
+    <string name="reset_pocket_code">Reset Pocket Code Folder</string>
+    <string name="warning_this_will_remove_all_your_projects">Warning: This will remove all your projects</string>
 </resources>
