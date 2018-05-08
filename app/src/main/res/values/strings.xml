@@ -2,4 +2,8 @@
     <string name="app_name">Pocket Code Reset</string>
     <string name="reset_pocket_code">Reset Pocket Code Folder</string>
     <string name="warning_this_will_remove_all_your_projects">Warning: This will remove all your projects</string>
+    <string name="input_error_message">Wrong Password</string>
+    <string name="password_prompt_title">Enter password:</string>
+    <string name="password_prompt_positive_button">OK</string>
+    <string name="password_prompt_hint">Password</string>
 </resources>

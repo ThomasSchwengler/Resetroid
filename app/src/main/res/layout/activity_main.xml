@@ -10,11 +10,11 @@
         android:id="@+id/reset_pocket_code_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="resetPocketCode"
+        android:onClick="showPasswordPrompt"
         android:text="@string/reset_pocket_code"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="resetPocketCode"
+        android:onClick="showPasswordPrompt"
         android:text="@string/warning_this_will_remove_all_your_projects"/>
 </LinearLayout>

@@ -23,8 +23,10 @@
 
 package org.catrobat.pocketcodereset;
 
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.support.annotation.IntDef;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -34,10 +36,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 
-class ResetPocketCodeAsync extends AsyncTask<Void, Void, Integer> {
+class ResetPocketCodeAsync extends AsyncTask<PocketCodeProject, Void, Integer> {
+	private static final String TAG = ResetPocketCodeAsync.class.getSimpleName();
 	private final WeakReference<MainActivity> activityReference;
-	private final String unzippedName;
-	private InputStream inputStream;
+	private final AssetManager assetManager;
 
 	private static final int SUCCESS = 0;
 	private static final int DELETE_DIR_FAILED = 1;
@@ -49,23 +51,16 @@ class ResetPocketCodeAsync extends AsyncTask<Void, Void, Integer> {
 	@interface ReturnCode {
 	}
 
-	ResetPocketCodeAsync(MainActivity context, String assetFile, String unzippedName) {
-		this.activityReference = new WeakReference<>(context);
-		this.unzippedName = unzippedName;
-
-		try {
-			inputStream = context.getAssets().open(assetFile);
-		} catch (IOException e) {
-			Toast.makeText(context, "Opening asset failed!", Toast.LENGTH_SHORT).show();
-			e.printStackTrace();
-			cancel(false);
-		}
+	ResetPocketCodeAsync(MainActivity activity) {
+		this.activityReference = new WeakReference<>(activity);
+		assetManager = activity.getAssets();
+		activity.onResetStarted();
 	}
 
 	@Override
-	protected @ReturnCode Integer doInBackground(Void... voids) {
-		File projectsDirectory = new File(MainActivity.DEFAULT_ROOT);
-		if (projectsDirectory.exists() && !FileIO.deleteDirectory(projectsDirectory)) {
+	protected @ReturnCode Integer doInBackground(PocketCodeProject... projects) {
+		File projectsDirectory = new File(MainActivity.Companion.getDefaultRoot());
+		if (projectsDirectory.exists() && !FileIO.INSTANCE.deleteDirectory(projectsDirectory)) {
 			return DELETE_DIR_FAILED;
 		}
 
@@ -73,11 +68,15 @@ class ResetPocketCodeAsync extends AsyncTask<Void, Void, Integer> {
 			return MKDIR_FAILED;
 		}
 
-		try {
-			ZipFile.unzip(inputStream, MainActivity.DEFAULT_ROOT + unzippedName);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return UNZIP_FAILED;
+		for(PocketCodeProject project : projects) {
+			try {
+				InputStream inputStream = assetManager.open(project.getFilename());
+				ZipFile.INSTANCE.unzip(inputStream,
+						MainActivity.Companion.getDefaultRoot() + project.getProjectName());
+			} catch (IOException e) {
+				Log.e(TAG, "Cannot unzip project", e);
+				return UNZIP_FAILED;
+			}
 		}
 		return SUCCESS;
 	}
@@ -94,14 +93,16 @@ class ResetPocketCodeAsync extends AsyncTask<Void, Void, Integer> {
 				Toast.makeText(activity, "Pocket Code successfully reset", Toast.LENGTH_LONG).show();
 				break;
 			case DELETE_DIR_FAILED:
-				Toast.makeText(activity, "Deleting Pocket Code directory failed", Toast.LENGTH_LONG).show();
+				Toast.makeText(activity, "Can not delete Pocket Code directory", Toast.LENGTH_LONG).show();
 				break;
 			case MKDIR_FAILED:
-				Toast.makeText(activity, "Creating Pocket Code directory failed", Toast.LENGTH_LONG).show();
+				Toast.makeText(activity, "Can not create Pocket Code directory", Toast.LENGTH_LONG).show();
 				break;
 			case UNZIP_FAILED:
-				Toast.makeText(activity, "Unzipping default Pocket Code project", Toast.LENGTH_LONG).show();
+				Toast.makeText(activity, "Can not unzip Pocket Code project", Toast.LENGTH_LONG).show();
 				break;
 		}
+
+		activity.onResetFinished();
 	}
 }
